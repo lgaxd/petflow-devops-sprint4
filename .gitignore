@@ -1,0 +1,48 @@
+HELP.md
+target/
+.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
+
+### STS ###
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+
+### IntelliJ IDEA ###
+.idea
+*.iws
+*.iml
+*.ipr
+
+### NetBeans ###
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+build/
+!**/src/main/**/build/
+!**/src/test/**/build/
+
+### VS Code ###
+.vscode/
+
+.env
+### Material local (nao versionar) ###
+ROTEIRO_VIDEO_*.md
+
+### Deploy (segredos locais) ###
+scripts/deploy/.env.deploy
+
+### Dados exportados do Oracle (dados pessoais; nao versionar) ###
+database/*.json
+LEIA-ME_*.md
+
+### Infra Azure (segredos locais) ###
+.env.azure
+entrega/*.tmp

@@ -1,0 +1,64 @@
+# CI do PetFlow (Azure Pipelines): compila, roda os testes automatizados e publica
+# o artefato "drop" (petflow-api.jar + scripts) que o CD consome.
+# Dispara a cada push na master (inclusive o merge de uma Pull Request).
+
+trigger:
+  branches:
+    include:
+      - master
+
+pr: none
+
+pool:
+  vmImage: ubuntu-latest
+
+variables:
+  MAVEN_CACHE_FOLDER: $(Pipeline.Workspace)/.m2/repository
+
+steps:
+  - task: JavaToolInstaller@0
+    displayName: Usar Java 21
+    inputs:
+      versionSpec: '21'
+      jdkArchitectureOption: x64
+      jdkSourceOption: PreInstalled
+
+  - task: Cache@2
+    displayName: Cache das dependências Maven
+    inputs:
+      key: 'maven | "$(Agent.OS)" | pom.xml'
+      restoreKeys: |
+        maven | "$(Agent.OS)"
+      path: $(MAVEN_CACHE_FOLDER)
+
+  # "verify" compila, executa todos os testes JUnit e gera target/petflow-api.jar.
+  # Os testes não usam banco (os de integração com banco ficam fora do build padrão).
+  # Se algum teste falhar, o Maven falha e a pipeline para aqui: nada é publicado.
+  - task: Maven@4
+    displayName: Build e testes (mvn clean verify)
+    inputs:
+      mavenPomFile: pom.xml
+      goals: clean verify
+      options: -B -Dmaven.repo.local=$(MAVEN_CACHE_FOLDER)
+      publishJUnitResults: true
+      testResultsFiles: '**/surefire-reports/TEST-*.xml'
+      testRunTitle: Testes JUnit do PetFlow
+      codeCoverageToolOption: JaCoCo
+      javaHomeOption: JDKVersion
+      jdkVersionOption: default
+
+  - task: CopyFiles@2
+    displayName: Separar JAR e scripts do CD
+    inputs:
+      Contents: |
+        target/petflow-api.jar
+        scripts/deploy-app.sh
+        scripts/smoke-test.sh
+      TargetFolder: $(Build.ArtifactStagingDirectory)
+      flattenFolders: true
+
+  - task: PublishPipelineArtifact@1
+    displayName: Publicar artefato drop (JAR)
+    inputs:
+      targetPath: $(Build.ArtifactStagingDirectory)
+      artifact: drop

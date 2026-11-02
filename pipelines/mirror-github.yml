@@ -1,0 +1,30 @@
+# Espelho automático Azure Repos -> GitHub. Roda a cada push na master e envia o
+# mesmo commit para o repositório do GitHub (link do PDF). Nada manual depois do setup.
+# Requer o Variable Group "petflow-s4-secrets" com GITHUB_PAT (secreto) e GITHUB_REPO
+# (ex.: github.com/lgaxd/petflow-devops-sprint4).
+
+trigger:
+  branches:
+    include:
+      - master
+
+pr: none
+
+pool:
+  vmImage: ubuntu-latest
+
+variables:
+  - group: petflow-s4-secrets
+
+steps:
+  - checkout: self
+    fetchDepth: 0
+    persistCredentials: false
+
+  - bash: |
+      set -euo pipefail
+      git push --force "https://x-access-token:${GITHUB_PAT}@${GITHUB_REPO}.git" HEAD:refs/heads/master
+    displayName: Espelhar master no GitHub
+    env:
+      GITHUB_PAT: $(GITHUB_PAT)
+      GITHUB_REPO: $(GITHUB_REPO)

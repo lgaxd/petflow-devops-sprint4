@@ -1,0 +1,3019 @@
+{
+  "info": {
+    "_postman_id": "0d095b17-9b26-49c8-ae4a-6dd6671a9ba8",
+    "name": "PetFlow API",
+    "description": "API para gerenciamento de saúde preventiva pet. Defina tutor_email, tutor_password, admin_email, admin_password e new_tutor_password em um environment local (não versionado) e execute a coleção na ordem para validar todos os endpoints.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "20421695"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8080"
+    },
+    {
+      "key": "token",
+      "value": ""
+    },
+    {
+      "key": "admin_token",
+      "value": ""
+    },
+    {
+      "key": "tutor_id",
+      "value": ""
+    },
+    {
+      "key": "tutor_email",
+      "value": ""
+    },
+    {
+      "key": "tutor_password",
+      "value": ""
+    },
+    {
+      "key": "admin_email",
+      "value": ""
+    },
+    {
+      "key": "admin_password",
+      "value": ""
+    },
+    {
+      "key": "new_tutor_password",
+      "value": ""
+    },
+    {
+      "key": "stamp",
+      "value": ""
+    },
+    {
+      "key": "cnpj",
+      "value": ""
+    },
+    {
+      "key": "new_tutor_id",
+      "value": ""
+    },
+    {
+      "key": "clinic_id",
+      "value": ""
+    },
+    {
+      "key": "plan_id",
+      "value": ""
+    },
+    {
+      "key": "pet_id",
+      "value": ""
+    },
+    {
+      "key": "subscription_id",
+      "value": ""
+    },
+    {
+      "key": "event_id",
+      "value": ""
+    },
+    {
+      "key": "coupon_id",
+      "value": ""
+    },
+    {
+      "key": "redeem_coupon_id",
+      "value": ""
+    },
+    {
+      "key": "redeem_id",
+      "value": ""
+    },
+    {
+      "key": "species_id",
+      "value": ""
+    },
+    {
+      "key": "event_type_id",
+      "value": ""
+    },
+    {
+      "key": "future_date",
+      "value": ""
+    },
+    {
+      "key": "future_event_id",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "Autenticação e Monitoramento",
+      "item": [
+        {
+          "name": "Health check",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status esperado: 200\", function () {",
+                  "    pm.expect([200]).to.include(pm.response.code);",
+                  "});",
+                  "pm.test(\"Aplicação UP\", () => pm.expect(pm.response.json().status).to.eql(\"UP\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/actuator/health",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "actuator",
+                "health"
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          }
+        },
+        {
+          "name": "Login (tutor)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status esperado: 200\", function () {",
+                  "    pm.expect([200]).to.include(pm.response.code);",
+                  "});",
+                  "if (pm.response.code < 300) {",
+                  "    const body = pm.response.json();",
+                  "    pm.collectionVariables.set(\"token\", body.token);",
+                  "}",
+                  "if (pm.response.code === 200) { pm.collectionVariables.set(\"tutor_id\", pm.response.json().id); }",
+                  "if (pm.response.code === 200) {",
+                  "    pm.test(\"Resposta traz expiresAt (instante ISO-8601)\", function () {",
+                  "        pm.expect(pm.response.json().expiresAt).to.match(/^\\d{4}-\\d{2}-\\d{2}T/);",
+                  "    });",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/login",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{tutor_email}}\",\n  \"password\": \"{{tutor_password}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          }
+        },
+        {
+          "name": "Login (admin)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status esperado: 200\", function () {",
+                  "    pm.expect([200]).to.include(pm.response.code);",
+                  "});",
+                  "if (pm.response.code < 300) {",
+                  "    const body = pm.response.json();",
+                  "    pm.collectionVariables.set(\"admin_token\", body.token);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/login",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{admin_email}}\",\n  \"password\": \"{{admin_password}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          }
+        },
+        {
+          "name": "Login com senha inválida (401)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status esperado: 401\", function () {",
+                  "    pm.expect([401]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/login",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{tutor_email}}\",\n  \"password\": \"senha-errada-123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          }
+        },
+        {
+          "name": "Rota protegida sem token (401)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status esperado: 401\", function () {",
+                  "    pm.expect([401]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/pets",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "pets"
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          }
+        },
+        {
+          "name": "Tutor tenta listar tutores (403)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status esperado: 403\", function () {",
+                  "    pm.expect([403]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/tutors",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "tutors"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Renovar token (tutor)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status esperado: 200\", function () {",
+                  "    pm.expect([200]).to.include(pm.response.code);",
+                  "});",
+                  "const body = pm.response.json();",
+                  "pm.test(\"Novo token e expiresAt\", function () {",
+                  "    pm.expect(body.token).to.be.a(\"string\").and.not.empty;",
+                  "    pm.expect(body.expiresAt).to.match(/^\\d{4}-\\d{2}-\\d{2}T/);",
+                  "});",
+                  "pm.test(\"Mesmo usuário e perfil\", function () {",
+                  "    pm.expect(body.id).to.eql(Number(pm.collectionVariables.get(\"tutor_id\")));",
+                  "    pm.expect(body.role).to.eql(\"TUTOR\");",
+                  "});",
+                  "// o resto da coleção passa a usar o token renovado",
+                  "pm.collectionVariables.set(\"token\", body.token);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/auth/refresh",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "refresh"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Renovar token sem token (401)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status esperado: 401\", function () {",
+                  "    pm.expect([401]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/auth/refresh",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "refresh"
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          }
+        },
+        {
+          "name": "Renovar token adulterado (401)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status esperado: 401\", function () {",
+                  "    pm.expect([401]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer abc.def.ghi"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/refresh",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "refresh"
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Tabelas de domínio",
+      "item": [
+        {
+          "name": "Listar espécies",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status esperado: 200\", function () {",
+                  "    pm.expect([200]).to.include(pm.response.code);",
+                  "});",
+                  "const list = pm.response.json();",
+                  "pm.test(\"Lista simples (array) com id e name\", function () {",
+                  "    pm.expect(list).to.be.an(\"array\").that.is.not.empty;",
+                  "    list.forEach(s => { pm.expect(s.id).to.be.a(\"number\"); pm.expect(s.name).to.be.a(\"string\"); });",
+                  "});",
+                  "pm.test(\"Ordenada por id\", function () {",
+                  "    const ids = list.map(s => s.id);",
+                  "    pm.expect(ids).to.eql([...ids].sort((a, b) => a - b));",
+                  "});",
+                  "pm.collectionVariables.set(\"species_id\", list[0].id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/species",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "species"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Listar tipos de evento",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status esperado: 200\", function () {",
+                  "    pm.expect([200]).to.include(pm.response.code);",
+                  "});",
+                  "const list = pm.response.json();",
+                  "pm.test(\"Lista simples (array) com id, name, pointsReward e category\", function () {",
+                  "    pm.expect(list).to.be.an(\"array\").that.is.not.empty;",
+                  "    list.forEach(t => {",
+                  "        pm.expect(t.id).to.be.a(\"number\"); pm.expect(t.name).to.be.a(\"string\");",
+                  "        pm.expect(t.pointsReward).to.be.a(\"number\"); pm.expect(t.category).to.be.a(\"string\");",
+                  "    });",
+                  "});",
+                  "pm.collectionVariables.set(\"event_type_id\", list[0].id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/event-types",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "event-types"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Espécies sem token (401)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status esperado: 401\", function () {",
+                  "    pm.expect([401]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/species",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "species"
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          }
+        },
+        {
+          "name": "Tipos de evento sem token (401)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status esperado: 401\", function () {",
+                  "    pm.expect([401]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/event-types",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "event-types"
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Tutores",
+      "item": [
+        {
+          "name": "Criar tutor (público)",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const stamp = Date.now().toString();",
+                  "pm.collectionVariables.set(\"stamp\", stamp);"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status esperado: 201\", function () {",
+                  "    pm.expect([201]).to.include(pm.response.code);",
+                  "});",
+                  "if (pm.response.code < 300) {",
+                  "    const body = pm.response.json();",
+                  "    pm.collectionVariables.set(\"new_tutor_id\", body.id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/tutors",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "tutors"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Pedro Silva\",\n  \"email\": \"pedro.{{stamp}}@email.com\",\n  \"phone\": \"(11) 99999-9999\",\n  \"password\": \"{{new_tutor_password}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          }
+        },
+        {
+          "name": "Listar tutores",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status esperado: 200\", function () {",
+                  "    pm.expect([200]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/tutors?page=0&size=10&sortBy=name&direction=asc",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "tutors"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "10"
+                },
+                {
+                  "key": "sortBy",
+                  "value": "name"
+                },
+                {
+                  "key": "direction",
+                  "value": "asc"
+                }
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{admin_token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Buscar tutor por ID",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status esperado: 200\", function () {",
+                  "    pm.expect([200]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/tutors/{{new_tutor_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "tutors",
+                "{{new_tutor_id}}"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{admin_token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Atualizar tutor",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status esperado: 200\", function () {",
+                  "    pm.expect([200]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/tutors/{{new_tutor_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "tutors",
+                "{{new_tutor_id}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Pedro Silva Atualizado\",\n  \"email\": \"pedro.{{stamp}}@email.com\",\n  \"phone\": \"(11) 88888-8888\",\n  \"password\": \"{{new_tutor_password}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{admin_token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Criar tutor com e-mail duplicado (409)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status esperado: 409\", function () {",
+                  "    pm.expect([409]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/tutors",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "tutors"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Pedro Silva\",\n  \"email\": \"pedro.{{stamp}}@email.com\",\n  \"phone\": \"1\",\n  \"password\": \"{{new_tutor_password}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Clínicas",
+      "item": [
+        {
+          "name": "Criar clínica",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const s = Date.now().toString().padStart(14, \"0\").slice(-14);",
+                  "pm.collectionVariables.set(\"cnpj\", `${s.slice(0,2)}.${s.slice(2,5)}.${s.slice(5,8)}/${s.slice(8,12)}-${s.slice(12,14)}`);"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status esperado: 201\", function () {",
+                  "    pm.expect([201]).to.include(pm.response.code);",
+                  "});",
+                  "if (pm.response.code < 300) {",
+                  "    const body = pm.response.json();",
+                  "    pm.collectionVariables.set(\"clinic_id\", body.id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/clinics",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "clinics"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"PetVision Veterinária\",\n  \"address\": \"Rua do Teste, 123 - São Paulo/SP\",\n  \"phone\": \"(11) 99999-9999\",\n  \"cnpj\": \"{{cnpj}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{admin_token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Listar clínicas",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status esperado: 200\", function () {",
+                  "    pm.expect([200]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/clinics?page=0&size=10&sortBy=name&direction=asc",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "clinics"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "10"
+                },
+                {
+                  "key": "sortBy",
+                  "value": "name"
+                },
+                {
+                  "key": "direction",
+                  "value": "asc"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Buscar clínica por ID",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status esperado: 200\", function () {",
+                  "    pm.expect([200]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/clinics/{{clinic_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "clinics",
+                "{{clinic_id}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Atualizar clínica",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status esperado: 200\", function () {",
+                  "    pm.expect([200]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/clinics/{{clinic_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "clinics",
+                "{{clinic_id}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"PetVision Atualizada\",\n  \"address\": \"Rua do Teste, 123 - São Paulo/SP\",\n  \"phone\": \"(11) 99999-9999\",\n  \"cnpj\": \"{{cnpj}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{admin_token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Tutor tenta criar clínica (403)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status esperado: 403\", function () {",
+                  "    pm.expect([403]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/clinics",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "clinics"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Intrusa\",\n  \"address\": \"x\",\n  \"phone\": \"1\",\n  \"cnpj\": \"00.000.000/0001-00\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Planos",
+      "item": [
+        {
+          "name": "Criar plano",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status esperado: 201\", function () {",
+                  "    pm.expect([201]).to.include(pm.response.code);",
+                  "});",
+                  "if (pm.response.code < 300) {",
+                  "    const body = pm.response.json();",
+                  "    pm.collectionVariables.set(\"plan_id\", body.id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/plans",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "plans"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Plano Premium\",\n  \"description\": \"Cobertura completa com consultas e exames\",\n  \"price\": 189.9,\n  \"durationDays\": 365,\n  \"pointsPerEvent\": 5,\n  \"clinicId\": \"{{clinic_id}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{admin_token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Listar planos",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status esperado: 200\", function () {",
+                  "    pm.expect([200]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/plans?page=0&size=10&sortBy=name&direction=asc",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "plans"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "10"
+                },
+                {
+                  "key": "sortBy",
+                  "value": "name"
+                },
+                {
+                  "key": "direction",
+                  "value": "asc"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Buscar plano por ID",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status esperado: 200\", function () {",
+                  "    pm.expect([200]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/plans/{{plan_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "plans",
+                "{{plan_id}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Atualizar plano",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status esperado: 200\", function () {",
+                  "    pm.expect([200]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/plans/{{plan_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "plans",
+                "{{plan_id}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Plano Premium Plus\",\n  \"description\": \"Com cirurgias\",\n  \"price\": 229.9,\n  \"durationDays\": 365,\n  \"pointsPerEvent\": 5,\n  \"clinicId\": \"{{clinic_id}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{admin_token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Pets",
+      "item": [
+        {
+          "name": "Criar pet",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status esperado: 201\", function () {",
+                  "    pm.expect([201]).to.include(pm.response.code);",
+                  "});",
+                  "if (pm.response.code < 300) {",
+                  "    const body = pm.response.json();",
+                  "    pm.collectionVariables.set(\"pet_id\", body.id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/pets",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "pets"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Tommy\",\n  \"breed\": \"Labrador\",\n  \"birthDate\": \"2018-05-20\",\n  \"weight\": 23.5,\n  \"speciesId\": {{species_id}},\n  \"tutorId\": \"{{tutor_id}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Listar pets",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status esperado: 200\", function () {",
+                  "    pm.expect([200]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/pets?page=0&size=10&sortBy=name&direction=asc",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "pets"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "10"
+                },
+                {
+                  "key": "sortBy",
+                  "value": "name"
+                },
+                {
+                  "key": "direction",
+                  "value": "asc"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Buscar pet por ID",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status esperado: 200\", function () {",
+                  "    pm.expect([200]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/pets/{{pet_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "pets",
+                "{{pet_id}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Atualizar pet",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status esperado: 200\", function () {",
+                  "    pm.expect([200]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/pets/{{pet_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "pets",
+                "{{pet_id}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Tommy Atualizado\",\n  \"breed\": \"Labrador\",\n  \"birthDate\": \"2018-05-20\",\n  \"weight\": 24.0,\n  \"speciesId\": 1,\n  \"tutorId\": \"{{tutor_id}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Assinaturas",
+      "item": [
+        {
+          "name": "Criar assinatura (status opcional)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status esperado: 201\", function () {",
+                  "    pm.expect([201]).to.include(pm.response.code);",
+                  "});",
+                  "if (pm.response.code < 300) {",
+                  "    const body = pm.response.json();",
+                  "    pm.collectionVariables.set(\"subscription_id\", body.id);",
+                  "}",
+                  "pm.test(\"Status padrão ATIVO\", () => pm.expect(pm.response.json().status).to.eql(\"ATIVO\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/subscriptions",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "subscriptions"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"startDate\": \"2026-01-01\",\n  \"petId\": \"{{pet_id}}\",\n  \"planId\": \"{{plan_id}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Listar assinaturas",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status esperado: 200\", function () {",
+                  "    pm.expect([200]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/subscriptions?page=0&size=10&sortBy=createdAt&direction=desc",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "subscriptions"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "10"
+                },
+                {
+                  "key": "sortBy",
+                  "value": "createdAt"
+                },
+                {
+                  "key": "direction",
+                  "value": "desc"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Buscar assinatura por ID",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status esperado: 200\", function () {",
+                  "    pm.expect([200]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/subscriptions/{{subscription_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "subscriptions",
+                "{{subscription_id}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Atualizar status da assinatura",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status esperado: 200\", function () {",
+                  "    pm.expect([200]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/subscriptions/{{subscription_id}}/status?status=ENCERRADO",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "subscriptions",
+                "{{subscription_id}}",
+                "status"
+              ],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "ENCERRADO"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Reativar assinatura encerrada (422)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status esperado: 422\", function () {",
+                  "    pm.expect([422]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/subscriptions/{{subscription_id}}/status?status=ATIVO",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "subscriptions",
+                "{{subscription_id}}",
+                "status"
+              ],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "ATIVO"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Eventos de Saúde",
+      "item": [
+        {
+          "name": "Criar evento (AGENDADO)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status esperado: 201\", function () {",
+                  "    pm.expect([201]).to.include(pm.response.code);",
+                  "});",
+                  "if (pm.response.code < 300) {",
+                  "    const body = pm.response.json();",
+                  "    pm.collectionVariables.set(\"event_id\", body.id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/health-events",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "health-events"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"description\": \"Vacinação contra raiva\",\n  \"eventDate\": \"2026-03-15\",\n  \"status\": \"AGENDADO\",\n  \"petId\": \"{{pet_id}}\",\n  \"eventTypeId\": {{event_type_id}}\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Listar eventos",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status esperado: 200\", function () {",
+                  "    pm.expect([200]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/health-events?page=0&size=10&sortBy=eventDate&direction=desc",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "health-events"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "10"
+                },
+                {
+                  "key": "sortBy",
+                  "value": "eventDate"
+                },
+                {
+                  "key": "direction",
+                  "value": "desc"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Buscar evento por ID",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status esperado: 200\", function () {",
+                  "    pm.expect([200]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/health-events/{{event_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "health-events",
+                "{{event_id}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Concluir evento (REALIZADO gera pontos)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status esperado: 200\", function () {",
+                  "    pm.expect([200]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/health-events/{{event_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "health-events",
+                "{{event_id}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"description\": \"Vacinação contra raiva\",\n  \"eventDate\": \"2026-03-15\",\n  \"status\": \"REALIZADO\",\n  \"petId\": \"{{pet_id}}\",\n  \"eventTypeId\": 1\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Voltar evento para AGENDADO (422)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status esperado: 422\", function () {",
+                  "    pm.expect([422]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/health-events/{{event_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "health-events",
+                "{{event_id}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"description\": \"Vacinação contra raiva\",\n  \"eventDate\": \"2026-03-15\",\n  \"status\": \"AGENDADO\",\n  \"petId\": \"{{pet_id}}\",\n  \"eventTypeId\": 1\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Agendar evento com data futura (201)",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// data 30 dias à frente (formato AAAA-MM-DD)",
+                  "pm.collectionVariables.set(\"future_date\", new Date(Date.now() + 30 * 86400000).toISOString().slice(0, 10));"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status esperado: 201\", function () {",
+                  "    pm.expect([201]).to.include(pm.response.code);",
+                  "});",
+                  "if (pm.response.code < 300) {",
+                  "    pm.collectionVariables.set(\"future_event_id\", pm.response.json().id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/health-events",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "health-events"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"description\": \"Retorno de rotina\",\n  \"eventDate\": \"{{future_date}}\",\n  \"status\": \"AGENDADO\",\n  \"petId\": \"{{pet_id}}\",\n  \"eventTypeId\": {{event_type_id}}\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Criar evento REALIZADO com data futura (422)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status esperado: 422\", function () {",
+                  "    pm.expect([422]).to.include(pm.response.code);",
+                  "});",
+                  "pm.test(\"Código de erro FUTURE_DATE_NOT_ALLOWED\", function () {",
+                  "    pm.expect(pm.response.json().code).to.eql(\"FUTURE_DATE_NOT_ALLOWED\");",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/health-events",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "health-events"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"description\": \"Retorno de rotina\",\n  \"eventDate\": \"{{future_date}}\",\n  \"status\": \"REALIZADO\",\n  \"petId\": \"{{pet_id}}\",\n  \"eventTypeId\": {{event_type_id}}\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Concluir evento agendado com data futura (422)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status esperado: 422\", function () {",
+                  "    pm.expect([422]).to.include(pm.response.code);",
+                  "});",
+                  "pm.test(\"Código de erro FUTURE_DATE_NOT_ALLOWED\", function () {",
+                  "    pm.expect(pm.response.json().code).to.eql(\"FUTURE_DATE_NOT_ALLOWED\");",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/health-events/{{future_event_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "health-events",
+                "{{future_event_id}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"description\": \"Retorno de rotina\",\n  \"eventDate\": \"{{future_date}}\",\n  \"status\": \"REALIZADO\",\n  \"petId\": \"{{pet_id}}\",\n  \"eventTypeId\": {{event_type_id}}\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Cancelar evento futuro (mantém a data, 200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status esperado: 200\", function () {",
+                  "    pm.expect([200]).to.include(pm.response.code);",
+                  "});",
+                  "pm.test(\"Status CANCELADO e data futura mantida\", function () {",
+                  "    const b = pm.response.json();",
+                  "    pm.expect(b.status).to.eql(\"CANCELADO\");",
+                  "    pm.expect(b.eventDate).to.eql(pm.collectionVariables.get(\"future_date\"));",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/health-events/{{future_event_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "health-events",
+                "{{future_event_id}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"description\": \"Retorno de rotina\",\n  \"eventDate\": \"{{future_date}}\",\n  \"status\": \"CANCELADO\",\n  \"petId\": \"{{pet_id}}\",\n  \"eventTypeId\": {{event_type_id}}\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Cupons",
+      "item": [
+        {
+          "name": "Criar cupom",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status esperado: 201\", function () {",
+                  "    pm.expect([201]).to.include(pm.response.code);",
+                  "});",
+                  "if (pm.response.code < 300) {",
+                  "    const body = pm.response.json();",
+                  "    pm.collectionVariables.set(\"coupon_id\", body.id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/coupons",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "coupons"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"code\": \"DESC{{stamp}}\",\n  \"status\": \"DISPONIVEL\",\n  \"expirationDate\": \"2099-12-31\",\n  \"templateId\": 1\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{admin_token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Listar cupons",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status esperado: 200\", function () {",
+                  "    pm.expect([200]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/coupons?page=0&size=10&sortBy=code&direction=asc",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "coupons"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "10"
+                },
+                {
+                  "key": "sortBy",
+                  "value": "code"
+                },
+                {
+                  "key": "direction",
+                  "value": "asc"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Listar cupons por status",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status esperado: 200\", function () {",
+                  "    pm.expect([200]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/coupons?status=DISPONIVEL&page=0&size=10",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "coupons"
+              ],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "DISPONIVEL"
+                },
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "10"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Buscar cupom por ID",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status esperado: 200\", function () {",
+                  "    pm.expect([200]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/coupons/{{coupon_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "coupons",
+                "{{coupon_id}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Atualizar status do cupom",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status esperado: 200\", function () {",
+                  "    pm.expect([200]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/coupons/{{coupon_id}}/status?status=UTILIZADO",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "coupons",
+                "{{coupon_id}}",
+                "status"
+              ],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "UTILIZADO"
+                }
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{admin_token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Status de cupom inválido (400)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status esperado: 400\", function () {",
+                  "    pm.expect([400]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/coupons?status=INVALIDO",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "coupons"
+              ],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "INVALIDO"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Resgates",
+      "item": [
+        {
+          "name": "Listar resgates",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status esperado: 200\", function () {",
+                  "    pm.expect([200]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/redeems?page=0&size=10&sortBy=createdAt&direction=desc",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "redeems"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "10"
+                },
+                {
+                  "key": "sortBy",
+                  "value": "createdAt"
+                },
+                {
+                  "key": "direction",
+                  "value": "desc"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Gamificação",
+      "item": [
+        {
+          "name": "Consultar meus pontos",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status esperado: 200\", function () {",
+                  "    pm.expect([200]).to.include(pm.response.code);",
+                  "});",
+                  "pm.test(\"Pontos do cadastro e do evento\", () => pm.expect(pm.response.json().totalPoints).to.be.above(0));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/gamification/points",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "gamification",
+                "points"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Consultar risco do pet",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status esperado: 200\", function () {",
+                  "    pm.expect([200]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/gamification/pets/{{pet_id}}/risk",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "gamification",
+                "pets",
+                "{{pet_id}}",
+                "risk"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Listar cupons disponíveis",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status esperado: 200\", function () {",
+                  "    pm.expect([200]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/gamification/coupons/available?page=0&size=10",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "gamification",
+                "coupons",
+                "available"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "10"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Criar cupom para o resgate (admin)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status esperado: 201\", function () {",
+                  "    pm.expect([201]).to.include(pm.response.code);",
+                  "});",
+                  "if (pm.response.code < 300) {",
+                  "    const body = pm.response.json();",
+                  "    pm.collectionVariables.set(\"redeem_coupon_id\", body.id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/coupons",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "coupons"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"code\": \"RESG{{stamp}}\",\n  \"status\": \"DISPONIVEL\",\n  \"expirationDate\": \"2099-12-31\",\n  \"templateId\": 1\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{admin_token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Resgatar cupom (200 ou 422 por saldo)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status esperado: 200, 422\", function () {",
+                  "    pm.expect([200, 422]).to.include(pm.response.code);",
+                  "});",
+                  "if (pm.response.code < 300) {",
+                  "    const body = pm.response.json();",
+                  "    pm.collectionVariables.set(\"redeem_id\", body.id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/gamification/redeem",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "gamification",
+                "redeem"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"couponId\": \"{{redeem_coupon_id}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Buscar resgate por ID (200 se houve resgate)",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (!pm.collectionVariables.get(\"redeem_id\")) { pm.collectionVariables.set(\"redeem_id\", \"0\"); }"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status esperado: 200, 404\", function () {",
+                  "    pm.expect([200, 404]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/redeems/{{redeem_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "redeems",
+                "{{redeem_id}}"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Limpeza",
+      "item": [
+        {
+          "name": "Remover assinatura",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status esperado: 204\", function () {",
+                  "    pm.expect([204]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/subscriptions/{{subscription_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "subscriptions",
+                "{{subscription_id}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Remover evento",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status esperado: 204\", function () {",
+                  "    pm.expect([204]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/health-events/{{event_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "health-events",
+                "{{event_id}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Remover evento futuro",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status esperado: 204\", function () {",
+                  "    pm.expect([204]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/health-events/{{future_event_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "health-events",
+                "{{future_event_id}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Remover pet",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status esperado: 204\", function () {",
+                  "    pm.expect([204]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/pets/{{pet_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "pets",
+                "{{pet_id}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Remover plano",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status esperado: 204\", function () {",
+                  "    pm.expect([204]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/plans/{{plan_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "plans",
+                "{{plan_id}}"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{admin_token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Remover clínica",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status esperado: 204\", function () {",
+                  "    pm.expect([204]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/clinics/{{clinic_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "clinics",
+                "{{clinic_id}}"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{admin_token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Remover cupom",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status esperado: 204\", function () {",
+                  "    pm.expect([204]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/coupons/{{coupon_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "coupons",
+                "{{coupon_id}}"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{admin_token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Remover cupom do resgate (409 se já foi resgatado)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status esperado: 204, 409\", function () {",
+                  "    pm.expect([204, 409]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/coupons/{{redeem_coupon_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "coupons",
+                "{{redeem_coupon_id}}"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{admin_token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Remover tutor criado no teste",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status esperado: 204\", function () {",
+                  "    pm.expect([204]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/tutors/{{new_tutor_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "tutors",
+                "{{new_tutor_id}}"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{admin_token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

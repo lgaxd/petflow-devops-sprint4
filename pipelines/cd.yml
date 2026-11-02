@@ -1,0 +1,79 @@
+# CD do PetFlow (Azure Pipelines): dispara sozinho quando o CI (petflow-ci) conclui
+# e publica um novo artefato "drop" na master. Não recompila: usa o JAR gerado no CI.
+#
+# Estágios:
+#   1. Deploy: grava os App Settings (segredos vêm do Variable Group, nunca do código)
+#      e publica o JAR no Azure Web App, esperando o /actuator/health (app + PostgreSQL) ficar UP.
+#   2. SmokeTest: roda o CRUD completo contra a URL pública já atualizada.
+
+trigger: none
+pr: none
+
+resources:
+  pipelines:
+    - pipeline: ci
+      source: petflow-ci          # nome da pipeline de CI no Azure DevOps
+      trigger:
+        branches:
+          include:
+            - master
+
+pool:
+  vmImage: ubuntu-latest
+
+variables:
+  - group: petflow-s4-secrets     # DB_URL, DB_USERNAME, DB_PASSWORD, JWT_SECRET, SMOKE_* (secretos)
+  - name: AZURE_SERVICE_CONNECTION
+    value: sc-petflow-s4
+  - name: RESOURCE_GROUP
+    value: 561413-petflow-s4-devops-rg
+  - name: WEB_APP_NAME
+    value: 561413-petflow-s4-api
+
+stages:
+  - stage: Deploy
+    displayName: Deploy no Azure Web App
+    jobs:
+      - job: DeployJar
+        displayName: Publicar JAR
+        steps:
+          - download: ci
+            artifact: drop
+            displayName: Baixar artefato do CI
+
+          - task: AzureCLI@2
+            displayName: App Settings + az webapp deploy + health check
+            inputs:
+              azureSubscription: $(AZURE_SERVICE_CONNECTION)
+              scriptType: bash
+              scriptLocation: scriptPath
+              scriptPath: $(Pipeline.Workspace)/ci/drop/deploy-app.sh
+              arguments: $(Pipeline.Workspace)/ci/drop/petflow-api.jar
+            env:
+              # Segredos precisam ser mapeados explicitamente para virar variável de ambiente.
+              DB_URL: $(DB_URL)
+              DB_USERNAME: $(DB_USERNAME)
+              DB_PASSWORD: $(DB_PASSWORD)
+              JWT_SECRET: $(JWT_SECRET)
+
+  - stage: SmokeTest
+    displayName: Teste do app implantado (CRUD)
+    dependsOn: Deploy
+    jobs:
+      - job: Smoke
+        displayName: CRUD de Pets na URL pública
+        steps:
+          - download: ci
+            artifact: drop
+            displayName: Baixar scripts
+
+          - task: AzureCLI@2
+            displayName: Smoke test (login, CRUD de Pets, agendamento de evento)
+            inputs:
+              azureSubscription: $(AZURE_SERVICE_CONNECTION)
+              scriptType: bash
+              scriptLocation: scriptPath
+              scriptPath: $(Pipeline.Workspace)/ci/drop/smoke-test.sh
+            env:
+              SMOKE_TUTOR_EMAIL: $(SMOKE_TUTOR_EMAIL)
+              SMOKE_TUTOR_PASSWORD: $(SMOKE_TUTOR_PASSWORD)

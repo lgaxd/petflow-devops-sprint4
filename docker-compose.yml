@@ -1,0 +1,28 @@
+# PostgreSQL local e vazio para rodar a API sem usar a nuvem.
+# O Flyway cria o schema (V1 tabelas, V2 seed) na primeira inicialização da API.
+#
+#   docker compose up -d postgres     # aguarde o status "healthy": docker compose ps
+#   ./mvnw spring-boot:run            # confira no log: "Successfully applied 2 migrations"
+#
+# Usa DB_USERNAME e DB_PASSWORD do .env (ou do ambiente). O volume pgdata mantém os dados entre reinícios;
+# para limpar tudo e recomeçar: docker compose down -v
+services:
+  postgres:
+    image: postgres:16
+    container_name: petflow-postgres
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: petflow
+      POSTGRES_USER: ${DB_USERNAME:-petflow_user}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?defina DB_PASSWORD no .env}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME:-petflow_user} -d petflow"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+volumes:
+  pgdata:

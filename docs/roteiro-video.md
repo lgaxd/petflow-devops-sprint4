@@ -44,7 +44,7 @@
 | "Testes de execução do app e persistência devem ser feitos **após o deploy automático** da pipeline" | O app só é exercitado depois de um CD verde. O "antes" da alteração é o teste unitário falhando no VS Code. O CRUD completo acontece depois do CD da alteração | 8, 12, 13, 14 |
 | "Faltou mostrar o **artefato publicado (JAR)**" | Abrir o run do CI, aba **Artifacts**, entrar em `drop` e mostrar `petflow-api.jar`. Mostrar o CD baixando esse mesmo artefato | 6, 10, 11 |
 | "O Build é criado de forma **manual pelo terminal**? Não entendi" | Dizer em voz alta que o único build é o do CI. Os testes locais rodam pelo **painel de testes do VS Code**, nunca por `mvnw package/verify` | 8, 10 |
-| "A branch é criada **sem uma tarefa, via terminal**" | Criar a **Task** no Boards e a branch pelo botão **Create a branch** da própria Task. No terminal só `git fetch` e `git checkout` | 7 |
+| "A branch é criada **sem uma tarefa, via terminal**" | Criar a **Task** no Boards e a branch pelo link **create a branch** da própria Task (depois de salvá-la). No terminal só `git fetch` e `git checkout` | 7 |
 | "Depois da alteração **não mostrou o CD**, somente o CI" | Acompanhar o `petflow-cd` disparando sozinho ao fim do CI, com os dois estágios (Deploy e SmokeTest) | 11 |
 | "Verifique 06 (execução de ponta a ponta) e 07 (execução das pipelines)" | Fluxo contínuo, sem pular: alteração, commit, CI, artefato, CD, Portal, app, CRUD | 8 a 14 |
 
@@ -58,8 +58,8 @@
 **Contas e credenciais (fora da câmera)**
 4. `az login` ativo na conta que enxerga a assinatura Azure for Students (a do Pietro) e `.env.azure` preenchido.
 5. No navegador, a mesma conta Microsoft logada no Azure DevOps, para a Service Connection enxergar a assinatura.
-6. `git config --global user.name` e `user.email` configurados no WSL, e uma credencial do Azure Repos pronta (PAT do Azure DevOps com permissão de Code: Read & Write), para o primeiro `git push` não travar.
-7. GitHub: repositório vazio `lgaxd/petflow-devops-sprint4` criado e um PAT com escopo `repo`, para o espelho. Os valores ficam só no Variable Group.
+6. `git config --global user.name` e `user.email` configurados no WSL, e a credencial do Azure Repos **já guardada**: gere o token em *Repos → Files → Clone → Generate Git Credentials* (ou um PAT com *Code: Read & write*), rode `git config --global credential.helper store` e autentique uma vez fora da câmera, para o `git push`/`git fetch` não pedirem senha no vídeo. Passo a passo em [azure-devops.md](azure-devops.md).
+7. GitHub: repositório vazio e público `lgaxd/petflow-devops-sprint4` criado e um **PAT** (token de acesso pessoal) gerado, para o espelho. Passo a passo em [azure-devops.md](azure-devops.md), seção 7. O token fica só no Variable Group, nunca na tela.
 8. Organização do Azure DevOps com **Parallel jobs** Microsoft-hosted liberado (Organization settings → Pipelines → Parallel jobs). Sem isso as pipelines ficam em *Queued*.
 
 **Ferramentas abertas, em abas, na ordem do roteiro**
@@ -301,7 +301,7 @@ git init -b master
 git add .
 git status
 git commit -m "PetFlow Sprint 4: aplicação, pipelines e scripts de infraestrutura"
-git remote add origin "<URL-de-clone-do-Azure-Repos>"
+git remote add origin "https://RM561469@dev.azure.com/RM561469/PetFlow/_git/PetFlow"
 git push -u origin master
 ```
 
@@ -420,7 +420,7 @@ bash scripts/sql.sh "SELECT table_name FROM information_schema.tables WHERE tabl
 ## Parte 7: Task e branch pelo Azure Boards (≈ 2 min)
 
 **[TELA]** Azure DevOps → *Boards* → *Work items*.
-**[AÇÃO]** **New Work Item → Task**, título `Validar tamanho mínimo do nome do pet`, atribuída a você, estado **Active**. Dentro da Task, painel **Development** → **Create a branch**, base `master`, e confirme.
+**[AÇÃO]** **New Work Item → Task**, título `Validar tamanho mínimo do nome do pet`, atribuída a você, estado **Active**. **Salve a Task (Save)**: só depois de salva o texto **create a branch** da seção **Development** (frase "You can also create a branch to get started", abaixo de *Add link*) fica azul e clicável. Clique nele; na janela confira *Repository* `PetFlow`, *Branch name* `feature/validar-nome-pet` e *Based on* `master`, e clique em **Create branch**. A branch aparece na seção **Development** da Task, vinculada. (Alternativa: **Repos → Branches → New branch**, base `master`, e em **Work items to link** escolha a Task pelo ID.)
 **[COMANDO]** No terminal WSL, na raiz do projeto:
 ```bash
 git fetch
@@ -430,7 +430,7 @@ git branch --show-current
 
 > Vou fazer uma alteração no código. Primeiro, crio uma Task no Azure Boards, chamada Validar tamanho mínimo do nome do pet, e deixo ela ativa.
 >
-> A branch de trabalho eu crio a partir da própria Task, por este botão, e não pelo terminal: assim a branch já nasce vinculada ao item. No terminal, eu só baixo as informações e mudo para essa branch.
+> Com a Task salva, crio a branch de trabalho a partir dela, por este link, e não pelo terminal: assim a branch já nasce vinculada ao item e aparece aqui na seção Development. No terminal, eu só baixo as informações e mudo para essa branch.
 
 ---
 

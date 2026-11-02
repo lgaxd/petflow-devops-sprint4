@@ -18,7 +18,11 @@ psql --version                    # obrigatório (usado pelo script 01 e pelo sq
 git config --global user.name "<seu nome>"
 git config --global user.email "<seu e-mail>"
 ```
-Tenha pronta, fora da câmera, uma credencial do Azure Repos (PAT do Azure DevOps com Code: Read & Write) para o primeiro `git push` (Parte 4).
+Guarde, fora da câmera, a credencial do Azure Repos (em *Repos → Files → Clone → Generate Git Credentials*, ou um PAT com *Code: Read & write*), para o `git push` e o `git fetch` não pedirem senha no vídeo:
+```bash
+git config --global credential.helper store
+```
+A primeira operação que contata o Azure Repos (o `git push` da Parte 4, ou um `git fetch`) pede a senha uma vez; depois fica salva.
 
 ### A2. Confirmar o estado inicial limpo
 ```bash
@@ -134,7 +138,7 @@ O health deve responder `{"status":"UP"}` e a segunda consulta lista as tabelas 
 ---
 
 ## Parte 7: Task e branch pelo Azure Boards
-A branch é criada **no Azure Boards** (Task → Development → Create a branch). No terminal, **só** isto:
+A branch é criada **no Azure Boards** (salve a Task; depois, na seção Development, o texto azul **create a branch**; alternativa: Repos → Branches → New branch, vinculando a Task em **Work items to link**). No terminal, **só** isto:
 ```bash
 git fetch
 git checkout <nome-da-branch-criada-pela-task>

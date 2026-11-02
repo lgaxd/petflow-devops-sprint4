@@ -8,7 +8,7 @@ import java.time.LocalDate;
 @Builder
 public record PetRequestDTO(
     @NotBlank(message = "O nome do pet é obrigatório")
-    @Size(max = 100, message = "O nome deve ter no máximo 100 caracteres")
+    @Size(min = 2, max = 100, message = "O nome deve ter entre 2 e 100 caracteres")
     String name,
 
     @Size(max = 50, message = "A raça deve ter no máximo 50 caracteres")

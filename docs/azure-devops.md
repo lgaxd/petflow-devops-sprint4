@@ -26,6 +26,18 @@ git push -u origin master
 ```
 Em *Repos → Branches*, deixe **master** como branch padrão.
 
+### Credencial do Git no Azure Repos (fazer uma vez, fora do vídeo)
+O `git fetch`/`git push` no WSL pede uma senha: é um **token de acesso pessoal (PAT) do Azure DevOps** (não confundir com o PAT do GitHub). O usuário já vem na URL (o nome da organização).
+
+1. No Azure DevOps: *Repos → Files → Clone* → **Generate Git Credentials** → copie a **Password**.
+   Alternativa: ícone de usuário → *Personal access tokens* → *New Token* (*Scopes:* Custom defined → **Code: Read & write**).
+2. Para não aparecer o prompt na gravação, guarde a credencial e autentique uma vez:
+   ```bash
+   git config --global credential.helper store
+   git fetch          # digite o token uma vez; depois não pede mais
+   ```
+   (Fica em `~/.git-credentials`, texto simples; não compartilhe esse arquivo.)
+
 **Políticas da master** 🎥 (*Branches → master → ⋯ → Branch policies*): 1 revisor com "Allow requestors to approve their own changes" e "Check for linked work items: Required".
 
 ## 4. Variable Group (segredos)
@@ -58,14 +70,26 @@ Use *Save* (seta ao lado de *Run*) e renomeie em *⋯ → Rename/move*. O nome `
 
 Evidências: log de cada step, aba **Tests** (188 testes; 190 depois da demo), **Code coverage** e o artefato **drop** com `petflow-api.jar`.
 
-## 7. Espelho GitHub (uma vez)
-1. Crie o repo vazio `lgaxd/petflow-devops-sprint4` no GitHub.
-2. Gere um PAT (Settings → Developer settings) com escopo `repo` e salve em `GITHUB_PAT` (item 4).
-3. A cada push na `master`, o `petflow-mirror-github` envia o mesmo commit. Nada manual depois disso.
+## 7. Espelho GitHub (uma vez, fora do vídeo)
+O `petflow-mirror-github` copia cada merge da `master` para o GitHub, para o link do PDF ficar sempre atualizado. Ele precisa de um **PAT** (*Personal Access Token*): uma senha longa, gerada por você, que autoriza a pipeline a escrever no seu repositório.
+
+1. No GitHub, crie o repositório **vazio** (sem README) `lgaxd/petflow-devops-sprint4`, **público** (para o professor abrir o link do PDF).
+2. Gere o PAT: *Settings* (menu da sua foto) → *Developer settings* → *Personal access tokens* → **Fine-grained tokens** → *Generate new token*:
+   - *Token name:* `petflow-mirror`; *Expiration:* 90 dias (cobre a data da correção);
+   - *Repository access:* *Only select repositories* → `petflow-devops-sprint4`;
+   - *Repository permissions → Contents:* **Read and write**.
+   - (Alternativa: *Tokens (classic)* com o escopo `repo`.)
+3. Clique em *Generate token* e **copie o valor** (`github_pat_...`): o GitHub só mostra uma vez. Guarde fora do enquadramento do vídeo.
+4. No Variable Group `petflow-s4-secrets` (item 4), cadastre **duas variáveis separadas** (*+ Add*, um nome e um valor por vez):
+   - `GITHUB_PAT` = o token, com o **cadeado**;
+   - `GITHUB_REPO` = `github.com/lgaxd/petflow-devops-sprint4` (sem `https://` e sem `.git`).
+5. A cada push na `master`, o `petflow-mirror-github` envia o mesmo commit para o GitHub. Nada manual depois disso.
+
+Se não quiser o espelho, não cadastre essas duas variáveis e não crie essa pipeline; o link do GitHub do PDF teria então que ser atualizado à mão.
 
 ## 8. Fluxo da demo 🎥
 1. *Boards → Work items → New → Task*: `Validar tamanho mínimo do nome do pet`, estado **Active**.
-2. Na Task, painel **Development → Create a branch** (base `master`). **Nunca crie a branch pelo terminal.**
+2. **Salve a Task**; na seção *Development* o texto **create a branch** fica azul. Clique, base `master`. Alternativa: *Repos → Branches → New branch*, vinculando a Task em *Work items to link*. **Nunca crie a branch pelo terminal.**
 3. No VS Code (WSL): `git fetch` e `git checkout <branch-da-task>`. Siga [mudanca-pr.md](mudanca-pr.md): teste que falha (pelo painel de testes do VS Code), regra, teste que passa, commit e push. Não rode `mvnw package`/`verify` nem faça deploy pelo terminal: o professor estranhou "build manual" no CP6.
 4. *Repos → Pull requests → New* (branch → `master`), vincule a Task, aprove e clique em **Complete** (deixe marcado "Complete associated work items").
 5. Mostre o `petflow-ci` iniciando sozinho, depois o `petflow-cd`, os logs, a aba Tests e o artefato JAR.

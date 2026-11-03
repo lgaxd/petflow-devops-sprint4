@@ -16,12 +16,16 @@ TMP="$(mktemp)"; trap 'rm -f "$TMP"' EXIT
 FAIL=0
 
 # call METHOD PATH EXPECTED [TOKEN] [JSON_BODY] -> grava o corpo em $TMP
+# Repete até 6 vezes (10 s) quando o app responde 000/502/503/504 (reinício, cold start): são erros transitórios.
 call() {
-  local method="$1" path="$2" expect="$3" token="${4:-}" body="${5:-}"
+  local method="$1" path="$2" expect="$3" token="${4:-}" body="${5:-}" code attempt
   local args=(-s -o "$TMP" -w "%{http_code}" --max-time 30 -X "$method" "$BASE_URL$path")
   [ -n "$token" ] && args+=(-H "Authorization: Bearer $token")
   [ -n "$body" ] && args+=(-H "Content-Type: application/json" -d "$body")
-  local code; code="$(curl "${args[@]}" || true)"
+  for attempt in 1 2 3 4 5 6; do
+    code="$(curl "${args[@]}" || true)"
+    case "$code" in 000|502|503|504) echo "  ($method $path -> HTTP $code, tentativa $attempt/6; aguardando 10 s)"; sleep 10 ;; *) break ;; esac
+  done
   if [ "$code" = "$expect" ]; then echo "PASS $method $path -> $code"
   else echo "FAIL $method $path -> $code (esperado $expect): $(head -c 300 "$TMP")"; FAIL=1; fi
 }

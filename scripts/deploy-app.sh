@@ -16,7 +16,7 @@ JAR="${1:-$(dirname "$0")/../target/petflow-api.jar}"
 HOST="$(az webapp show --resource-group "$RESOURCE_GROUP" --name "$WEB_APP_NAME" --query defaultHostName --output tsv)"
 URL="https://$HOST"
 
-echo "==> 1/3 App Settings do $WEB_APP_NAME (valores não são exibidos)"
+echo "==> 1/4 App Settings do $WEB_APP_NAME (valores não são exibidos)"
 SETTINGS_FILE="$(mktemp)"
 trap 'rm -f "$SETTINGS_FILE"' EXIT
 chmod 600 "$SETTINGS_FILE"
@@ -36,18 +36,39 @@ PY
 az webapp config appsettings set --resource-group "$RESOURCE_GROUP" --name "$WEB_APP_NAME" \
   --settings "@$SETTINGS_FILE" --output none
 
-echo "==> 2/3 Enviando $(basename "$JAR") para o Web App"
+echo "==> 2/4 Enviando $(basename "$JAR") para o Web App"
 az webapp deploy --resource-group "$RESOURCE_GROUP" --name "$WEB_APP_NAME" \
   --src-path "$JAR" --type jar --track-status false --output none
 
-echo "==> 3/3 Aguardando $URL/actuator/health responder UP (até 10 minutos)"
+# O "az webapp deploy" volta ANTES de o app reiniciar com o JAR novo. Se o health check rodar nesse intervalo,
+# a instância ANTIGA responde 200 e o CD seguiria para o smoke test com o app prestes a reiniciar.
+# Por isso: 1) espera o reinício aparecer (o app sai do ar), 2) espera voltar, 3) confirma 3 respostas seguidas.
+code() { curl -s -o /dev/null -w "%{http_code}" --max-time 10 "$URL/actuator/health" || true; }
+
+echo "==> 3/4 Aguardando o app reiniciar com o JAR novo (até 90 s)"
+SAW_RESTART=0
+for i in $(seq 1 45); do
+  CODE="$(code)"
+  if [ "$CODE" != "200" ]; then SAW_RESTART=1; echo "  reinício detectado (HTTP $CODE)"; break; fi
+  sleep 2
+done
+[ "$SAW_RESTART" = 1 ] || echo "  reinício não observado em 90 s (o app pode já ter reiniciado); seguindo para a verificação de saúde"
+
+echo "==> 4/4 Aguardando $URL/actuator/health responder UP (até 10 minutos)"
 for i in $(seq 1 60); do
-  CODE=$(curl -s -o /dev/null -w "%{http_code}" --max-time 10 "$URL/actuator/health" || true)
+  CODE="$(code)"
   if [ "$CODE" = "200" ]; then
-    echo "Aplicação saudável (aplicação + PostgreSQL): $URL"
-    exit 0
+    # confirma estabilidade: 3 respostas 200 seguidas (evita pegar a instância antiga ou um app ainda subindo)
+    OK=1
+    for k in 1 2; do sleep 5; [ "$(code)" = "200" ] && OK=$((OK + 1)); done
+    if [ "$OK" = 3 ]; then
+      echo "Aplicação saudável (aplicação + PostgreSQL): $URL"
+      exit 0
+    fi
+    echo "  instável, aguardando..."
+  else
+    echo "  tentativa $i/60: HTTP $CODE"
   fi
-  echo "  tentativa $i/60: HTTP $CODE"
   sleep 10
 done
 

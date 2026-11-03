@@ -4,9 +4,9 @@ API REST de saúde preventiva pet com gamificação, entregue por pipelines CI/C
 
 | Item | Link |
 |---|---|
-| Projeto Azure DevOps | `<preencher: https://dev.azure.com/...>` |
-| Repositório GitHub (espelho) | `<preencher: https://github.com/lgaxd/petflow-devops-sprint4>` |
-| Vídeo no YouTube | `<preencher>` |
+| Projeto Azure DevOps | https://dev.azure.com/RM561469/PetFlow |
+| Repositório GitHub (espelho) | https://github.com/lgaxd/petflow-devops-sprint4 |
+| Vídeo no YouTube | https://www.youtube.com/watch?v=bukwmfzxSWI |
 | Aplicação (Swagger) | `https://561413-petflow-s4-api.azurewebsites.net/swagger` |
 
 | Integrante | RM | Turma |

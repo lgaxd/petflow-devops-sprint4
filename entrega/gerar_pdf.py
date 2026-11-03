@@ -6,8 +6,8 @@ import fitz
 
 SAIDA = "PetFlow_DevOps_Sprint4.pdf"
 LINK_GITHUB = "https://github.com/lgaxd/petflow-devops-sprint4"
-LINK_VIDEO = "PREENCHER-LINK-DO-YOUTUBE"
-LINK_AZURE_DEVOPS = "PREENCHER-LINK-DO-PROJETO-AZURE-DEVOPS"
+LINK_VIDEO = "https://www.youtube.com/watch?v=bukwmfzxSWI"
+LINK_AZURE_DEVOPS = "https://dev.azure.com/RM561469/PetFlow"
 
 INTEGRANTES = [
     ("Lucas Grillo Alcântara", "561413", "2TDSPX"),
